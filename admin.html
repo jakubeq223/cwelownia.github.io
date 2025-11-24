@@ -29,7 +29,7 @@
   <h2>Generator tokenów</h2>
 
   <label>Ile tokenów wygenerować:</label><br>
-  <input id="count" value="10" type="number"><br><br>
+  <input id="count" value="10" type="number" min="1" max="500"><br><br>
 
   <button id="genBtn">Generuj tokeny</button>
 
@@ -38,71 +38,78 @@
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-  import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyC7jjcojlIoiXXflxpUT5ncu33jDF7p60k",
-    authDomain: "bywatel-eb940.firebaseapp.com",
-    databaseURL: "https://bywatel-eb940-default-rtdb.firebaseio.com",
-    projectId: "bywatel-eb940",
-    storageBucket: "bywatel-eb940.firebasestorage.app",
-    messagingSenderId: "648437385966",
-    appId: "1:648437385966:web:96a58994f12d4d8c4f81ff",
-    measurementId: "G-0505X7DVGH"
-  };
+// 🔑 Konfiguracja Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyC7jjcojlIoiXXflxpUT5ncu33jDF7p60k",
+  authDomain: "bywatel-eb940.firebaseapp.com",
+  databaseURL: "https://bywatel-eb940-default-rtdb.firebaseio.com",
+  projectId: "bywatel-eb940",
+  storageBucket: "bywatel-eb940.firebasestorage.app",
+  messagingSenderId: "648437385966",
+  appId: "1:648437385966:web:96a58994f12d4d8c4f81ff",
+  measurementId: "G-0505X7DVGH"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getDatabase(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-  const ADMIN_UID = "tIsMfJ9kH9hF4sddfQ4VUSf9fnm2";
+// 🔑 Twój UID admina
+const ADMIN_UID = "tIsMfJ9kH9hF4sddfQ4VUSf9fnm2";
 
-  // 🔗 prefix do linków
-  const TOKEN_PREFIX = "https://mbywatel4.netlify.app/?token=";
+// 🔗 Prefix do linków
+const TOKEN_PREFIX = "https://mbywatel4.netlify.app/?token=";
 
-  document.getElementById("loginBtn").onclick = async () => {
-    const email = document.getElementById("email").value;
-    const pass = document.getElementById("password").value;
+// Logowanie
+document.getElementById("loginBtn").onclick = async () => {
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
 
-    try {
-      await signInWithEmailAndPassword(auth, email, pass);
-    } catch (e) {
-      document.getElementById("loginError").innerText = "Błąd logowania: " + e.message;
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch (e) {
+    document.getElementById("loginError").innerText = "Błąd logowania: " + e.message;
+  }
+};
+
+// Pokazanie panelu po zalogowaniu
+onAuthStateChanged(auth, (user) => {
+  if (user && user.uid === ADMIN_UID) {
+    document.getElementById("loginForm").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+  }
+});
+
+// Generowanie tokenów
+document.getElementById("genBtn").onclick = async () => {
+  const count = Number(document.getElementById("count").value);
+  if (isNaN(count) || count < 1 || count > 500) return alert("Wprowadź poprawną liczbę tokenów (1-500)");
+
+  const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
+  const output = [];
+  const updates = {};
+
+  for (let i = 0; i < count; i++) {
+    let token = "";
+    for (let j = 0; j < 20; j++) {
+      token += alphabet[Math.floor(Math.random() * alphabet.length)];
     }
-  };
+    const link = TOKEN_PREFIX + encodeURIComponent(token);
+    output.push(link);
+    updates[token] = false; // token nieużyty
+  }
 
-  onAuthStateChanged(auth, (user) => {
-    if (user && user.uid === ADMIN_UID) {
-      document.getElementById("loginForm").style.display = "none";
-      document.getElementById("panel").style.display = "block";
-    }
-  });
-
-  document.getElementById("genBtn").onclick = async () => {
-    const count = Number(document.getElementById("count").value);
-    const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
-
-    const output = [];
-    const updates = {};
-
-    for (let i = 0; i < count; i++) {
-      let token = "";
-      for (let j = 0; j < 20; j++) {
-        token += alphabet[Math.floor(Math.random() * alphabet.length)];
-      }
-
-      const link = TOKEN_PREFIX + encodeURIComponent(token);
-
-      output.push(link);
-      updates["/tokens/" + token] = false;
-    }
-
-    await update(ref(db), updates);
-
+  try {
+    await update(ref(db, "/tokens"), updates);
     document.getElementById("output").innerText = output.join("\n\n");
-  };
+  } catch (e) {
+    document.getElementById("output").innerText = "Błąd przy zapisie tokenów: " + e.message;
+  }
+};
 </script>
 
 </body>
