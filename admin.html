@@ -21,11 +21,11 @@
   <input id="length" type="number" value="20" min="8" max="64">
 
   <label>Twój link (np. https://guwno-2137.github.io/mObywatelek_67?token=)</label><br>
-<input id="prefix" type="text" value="https://mbywatel4.netlify.app/?token=" style="width:100%">
+  <input id="prefix" type="text" value="https://mbywatel4.netlify.app/?token=" style="width:100%">
 
   <div style="margin-top:10px;">
-    <button id="genBtn">Generuj i zapisz w Firebase</button>
-    <button id="localBtn">Generuj lokalnie (nie zapisuje)</button>
+    <button id="genBtn" disabled>Generuj i zapisz w Firebase</button>
+    <button id="localBtn" disabled>Generuj lokalnie (nie zapisuje)</button>
     <button id="csvBtn" disabled>Pobierz CSV</button>
   </div>
 
@@ -33,21 +33,30 @@
   <div id="out" class="links">Brak</div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
-// === TU WKLEJ SWÓJ FIREBASE CONFIG ===
+// === KONFIGURACJA ===
+const ADMIN_UID = "tIsMfJ9kH9hF4sddfQ4VUSf9fnm2";
+const ADMIN_EMAIL = "twojadmin@email.com"; // tutaj podaj email admina
+const ADMIN_PASSWORD = "TwojeSuperHaslo123"; // tutaj hasło admina
+
 const firebaseConfig = {
-  apiKey: "AIzaSyAEK_UPXXpBLAeN3KKt5zUI5zhBhPw3lYU",
-  authDomain: "mbywatel-6b604.firebaseapp.com",
-  projectId: "mbywatel-6b604",
-  storageBucket: "mbywatel-6b604.firebasestorage.app",
-  messagingSenderId: "346214908701",
-  appId: "1:346214908701:web:26ba7ec06f4717604a57f4"
+  apiKey: "AIzaSyC7jjcojlIoiXXflxpUT5ncu33jDF7p60k",
+  authDomain: "bywatel-eb940.firebaseapp.com",
+  databaseURL: "https://bywatel-eb940-default-rtdb.firebaseio.com",
+  projectId: "bywatel-eb940",
+  storageBucket: "bywatel-eb940.firebasestorage.app",
+  messagingSenderId: "648437385966",
+  appId: "1:648437385966:web:96a58994f12d4d8c4f81ff",
+  measurementId: "G-0505X7DVGH"
 };
 
+// --- INICJALIZACJA ---
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
 
 // --- ELEMENTY DOM ---
 const countEl = document.getElementById("count");
@@ -60,7 +69,7 @@ const csvBtn = document.getElementById("csvBtn");
 
 let lastGenerated = [];
 
-// --- FUNKCJE ---
+// --- FUNKCJE GENEROWANIA TOKENÓW ---
 function randToken(len) {
   const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
   const arr = new Uint8Array(len);
@@ -149,6 +158,25 @@ csvBtn.addEventListener("click", () => {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+});
+
+// --- AUTOMATYCZNE LOGOWANIE ADMINA ---
+signInWithEmailAndPassword(auth, ADMIN_EMAIL, ADMIN_PASSWORD)
+  .catch(err => {
+    outEl.textContent = "Błąd logowania: " + err.message;
+  });
+
+// --- SPRAWDZENIE UID ---
+onAuthStateChanged(auth, user => {
+  if (user && user.uid === ADMIN_UID) {
+    genBtn.disabled = false;
+    localBtn.disabled = false;
+    outEl.textContent = "Zalogowano jako admin.";
+  } else {
+    genBtn.disabled = true;
+    localBtn.disabled = true;
+    outEl.textContent = "Zaloguj się jako admin, aby używać tego panelu.";
+  }
 });
 </script>
 </body>
