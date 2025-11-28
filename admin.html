@@ -26,7 +26,7 @@ pre { text-align:left; margin:auto; width:90%; background:#222; padding:20px; bo
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
-// 🔑 Konfiguracja Firebase – już wszystkie dane wprowadzone
+// 🔑 KONFIGURACJA FIREBASE – już wszystkie Twoje dane
 const firebaseConfig = {
   apiKey: "AIzaSyC7jjcojlIoiXXflxpUT5ncu33jDF7p60k",
   authDomain: "bywatel-eb940.firebaseapp.com",
@@ -64,7 +64,7 @@ document.getElementById("genBtn").onclick = async () => {
     }
     const link = TOKEN_PREFIX + encodeURIComponent(token);
     output.push(link);
-    updates[safeKey(token)] = { value: token, used: false }; // zapis bezpieczny w DB
+    updates[safeKey(token)] = { value: token, used: false }; // zapis w poprawnym formacie
   }
 
   try {
