@@ -32,7 +32,7 @@ pre { text-align:left; margin:auto; width:90%; background:#222; padding:20px; bo
 
   <button id="genBtn">Generuj tokeny</button>
 
-  <h3>Wygenerowane linki:</h3>
+  <h3>Linki:</h3>
   <pre id="output"></pre>
 </div>
 
@@ -41,7 +41,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebas
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
-// Konfiguracja Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyC7jjcojlIoiXXflxpUT5ncu33jDF7p60k",
   authDomain: "bywatel-eb940.firebaseapp.com",
@@ -57,10 +56,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-const ADMIN_UID = "tIsMfJ9kH9hF4sddfQ4VUSf9fnm2";  
-const TOKEN_PREFIX = "https://mbywatel4.netlify.app/?token=";
+const ADMIN_UID = "tIsMfJ9kH9hF4sddfQ4VUSf9fnm2";
+const TOKEN_PREFIX = "https://twoja-strona.vercel.app/index.html?token=";
 
-// Logowanie admina
 document.getElementById("loginBtn").onclick = async () => {
   const email = document.getElementById("email").value;
   const pass = document.getElementById("password").value;
@@ -72,7 +70,6 @@ document.getElementById("loginBtn").onclick = async () => {
   }
 };
 
-// Pokaż panel po zalogowaniu
 onAuthStateChanged(auth, (user) => {
   if (user && user.uid === ADMIN_UID) {
     document.getElementById("loginForm").style.display = "none";
@@ -80,10 +77,9 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// Generowanie tokenów
 document.getElementById("genBtn").onclick = async () => {
   const count = Number(document.getElementById("count").value);
-  if (isNaN(count) || count < 1 || count > 500) return alert("Podaj liczbę tokenów 1–500!");
+  if (isNaN(count) || count < 1 || count > 500) return alert("Wprowadź liczbę tokenów (1-500)");
 
   const alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
   const output = [];
@@ -91,24 +87,19 @@ document.getElementById("genBtn").onclick = async () => {
 
   for (let i = 0; i < count; i++) {
     let token = "";
-
     for (let j = 0; j < 20; j++) {
       token += alphabet[Math.floor(Math.random() * alphabet.length)];
     }
-
-    // Link dla użytkownika
     const link = TOKEN_PREFIX + encodeURIComponent(token);
     output.push(link);
-
-    // Zapis tokena — poprawnie dla rules
-    updates[`tokens/${token}`] = false;
+    updates[token] = false; // boolean false
   }
 
   try {
-    await update(ref(db), updates);
+    await update(ref(db, "/tokens"), updates);
     document.getElementById("output").innerText = output.join("\n\n");
   } catch (e) {
-    document.getElementById("output").innerText = "Błąd Firebase: " + e.message;
+    document.getElementById("output").innerText = "Błąd przy zapisie tokenów: " + e.message;
   }
 };
 </script>
