@@ -2,47 +2,31 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Panel admina</title>
+<title>Generator tokenów</title>
 <style>
-body { font-family: Arial; background: #111; color: #fff; text-align:center; }
-#loginForm, #panel { margin-top: 50px; }
+body { font-family: Arial; background:#111; color:#fff; text-align:center; padding:50px; }
 input { padding:10px; margin:5px; width:250px; border-radius:5px; border:none; }
 button { padding:10px 20px; background:#6a00d4; border:none; border-radius:5px; color:white; cursor:pointer; }
-#panel { display:none; }
 pre { text-align:left; margin:auto; width:90%; background:#222; padding:20px; border-radius:6px; white-space:pre-wrap; }
 </style>
 </head>
 <body>
 
-<h1>ADMIN PANEL</h1>
+<h1>Generator tokenów</h1>
 
-<div id="loginForm">
-  <h2>Logowanie administratora</h2>
-  <input id="email" type="email" placeholder="Email"><br>
-  <input id="password" type="password" placeholder="Hasło"><br>
-  <button id="loginBtn">Zaloguj</button>
-  <p id="loginError" style="color:red;"></p>
-</div>
+<label>Ile tokenów wygenerować:</label><br>
+<input id="count" value="10" type="number" min="1" max="500"><br><br>
 
-<div id="panel">
-  <h2>Generator tokenów</h2>
+<button id="genBtn">Generuj tokeny</button>
 
-  <label>Ile tokenów wygenerować:</label><br>
-  <input id="count" value="10" type="number" min="1" max="500"><br><br>
-
-  <button id="genBtn">Generuj tokeny</button>
-
-  <h3>Linki:</h3>
-  <pre id="output"></pre>
-</div>
+<h3>Linki:</h3>
+<pre id="output"></pre>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
 // 🔑 Konfiguracja Firebase
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyC7jjcojlIoiXXflxpUT5ncu33jDF7p60k",
   authDomain: "bywatel-eb940.firebaseapp.com",
@@ -55,35 +39,10 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getDatabase(app);
 
-// UID admina z Firebase Auth
-const ADMIN_UID = "tIsMfJ9kH9hF4sddfQ4VUSf9fnm2";
-// Twój link Vercel z parametrem token
 const TOKEN_PREFIX = "https://m-obywatelek-67.vercel.app/index.html?token=";
 
-// Logowanie admina
-document.getElementById("loginBtn").onclick = async () => {
-  const email = document.getElementById("email").value;
-  const pass = document.getElementById("password").value;
-
-  try {
-    await signInWithEmailAndPassword(auth, email, pass);
-  } catch (e) {
-    document.getElementById("loginError").innerText = "Błąd logowania: " + e.message;
-  }
-};
-
-// Pokaż panel po zalogowaniu
-onAuthStateChanged(auth, (user) => {
-  if (user && user.uid === ADMIN_UID) {
-    document.getElementById("loginForm").style.display = "none";
-    document.getElementById("panel").style.display = "block";
-  }
-});
-
-// Generowanie tokenów
 document.getElementById("genBtn").onclick = async () => {
   const count = Number(document.getElementById("count").value);
   if (isNaN(count) || count < 1 || count > 500) return alert("Wprowadź liczbę tokenów (1-500)");
@@ -99,10 +58,11 @@ document.getElementById("genBtn").onclick = async () => {
     }
     const link = TOKEN_PREFIX + encodeURIComponent(token);
     output.push(link);
-    updates[token] = false; // token nieużyty
+    updates[token] = false; // token nieużyty, boolean false = nieużyty
   }
 
   try {
+    // Nadpisuje tylko nowe tokeny, nie usuwa istniejących
     await update(ref(db, "/tokens"), updates);
     document.getElementById("output").innerText = output.join("\n\n");
   } catch (e) {
