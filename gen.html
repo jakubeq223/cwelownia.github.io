@@ -322,35 +322,40 @@
             margin-left: 20px;
             padding-left: 0;
         }
-        .discord-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background-color: #5865F2;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 16px;
-            transition: 0.2s;
-         }
+       .discord-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #ffffff;       /* biały przycisk */
+    color: #000000;                  /* czarny tekst */
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    transition: 0.2s;
+    border: 1px solid #ccc;          /* delikatna ramka, żeby przycisk był dobrze widoczny */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08); /* lekki cień – opcjonalne, ale ładnie wygląda */
+}
 
-        .discord-btn:hover {
-            background-color: #4752C4;
-        }
+.discord-btn:hover {
+    background-color: #f0f0f0;       /* delikatne przyciemnienie na hover */
+    border-color: #aaa;
+}
 
-        .discord-logo {
-            width: 24px;
-            height: 24px;
-        }
+.discord-logo {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0);           /* zmienia kolor ikony na czarny (jeśli to biała ikona Discord) */
+    /* ewentualnie możesz użyć czarnej wersji ikony zamiast filtra */
+}
 
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Mbywatel4.0</h1>
+        <h1>ePsteinObywatel</h1>
  <details class="instruction-details">
             <summary>
                 INSTRUKCJA 
